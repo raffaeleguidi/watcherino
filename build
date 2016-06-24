@@ -1,0 +1,11 @@
+#!/bin/bash
+echo Watcherino building...
+echo ==================================
+echo installing fsnotify
+go install github.com/fsnotify/fsnotify
+echo building for macos
+GOOS=darwin GOARCH=amd64 go build -o dist/watcherino-mac watcherino.go
+echo building for linux
+GOOS=linux GOARCH=amd64 go build -o dist/watcherino watcherino.go
+echo building for windows
+GOOS=windows GOARCH=amd64 go build -o dist/watcherino.exe watcherino.go
