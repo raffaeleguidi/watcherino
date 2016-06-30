@@ -1,7 +1,9 @@
 #!/bin/bash
 echo Watcherino building...
 echo ==================================
-echo installing fsnotify
+echo installing libraries
+go get gopkg.in/alecthomas/kingpin.v2
+go get github.com/fsnotify/fsnotify
 go install github.com/fsnotify/fsnotify
 echo building for macos
 GOOS=darwin GOARCH=amd64 go build -o dist/watcherino-mac watcherino.go
