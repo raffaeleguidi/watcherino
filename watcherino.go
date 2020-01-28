@@ -9,10 +9,11 @@ package main
 import (
 	"log"
 
-	"github.com/fsnotify/fsnotify"
 	"os/exec"
-	"time"
 	"path/filepath"
+	"time"
+
+	"github.com/fsnotify/fsnotify"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -34,20 +35,21 @@ func Execute(command string, folder string, file string, event string) {
 var timer *time.Timer
 var second bool
 
-func Delay (command string, folder string, file string, event string, delay int) {
-	if (second) {
-		timer.Reset(time.Second * time.Duration(delay)) 
+func Delay(command string, folder string, file string, event string, delay int) {
+	if second {
+		timer.Reset(time.Second * time.Duration(delay))
 		return
 	} else {
 		second = true
 	}
 	t := time.NewTimer(time.Second * time.Duration(delay))
 	go func() {
-		timer = t;
-        <-t.C
-        second = false;
-        Execute(command, folder, file, event)
-    }()
+		timer = t
+		<-t.C
+		second = false
+		log.Println("executing command on folder:", folder, "with event:", event, "for file:", file)
+		Execute(command, folder, file, event)
+	}()
 }
 
 func Watcher(folder string, pattern string, command string, delay int) {
@@ -64,16 +66,21 @@ func Watcher(folder string, pattern string, command string, delay int) {
 			case event := <-watcher.Events:
 				write := event.Op&fsnotify.Write == fsnotify.Write
 				create := event.Op&fsnotify.Create == fsnotify.Create
-				if (write || create) {
-				    filename := event.Name[len(folder)+1:1+len(event.Name)-len(folder)]
+				if write || create {
+					//log.Println("folder:", folder, "event.Name:", event.Name, "event.Op:", event.Op)
+					filename := event.Name[len(folder):]
 					matched, err := filepath.Match(pattern, filename)
 					if err != nil {
-			        	log.Println(err)
+						log.Println(err)
 					} else {
 						eventType := "WRITE"
-						if (create) { eventType = "CREATE" }
-						if (matched) {
+						if create {
+							eventType = "CREATE"
+						}
+						if matched {
 							Delay(command, folder, filename, eventType, delay)
+						} else {
+							log.Println("not matched folder:", folder, "event:", event)
 						}
 					}
 				}
@@ -92,14 +99,14 @@ func Watcher(folder string, pattern string, command string, delay int) {
 
 var (
 	command = kingpin.Arg("command", "Command to execute").Required().String()
-	folder  = kingpin.Arg("folder", "Folder to watch for changes").Default(".").String()
-	pattern  = kingpin.Flag("pattern", "Pattern filter").Default("*").String()
+	folder  = kingpin.Arg("folder", "Folder to watch for changes - NO \".\" ALLOWED!").Default(".").String()
+	pattern = kingpin.Flag("pattern", "Pattern filter").Default("*").String()
 	delay   = kingpin.Flag("delay", "Number seconds to wait from last change").Default("5").Int()
 )
 
 func main() {
 	kingpin.Version("0.0.1")
 	kingpin.Parse()
-	log.Println("Watcherino executing", *command, "for changes in folder", *folder, "pattern", *pattern, "with a", *delay, "seconds delay" )
+	log.Println("Watcherino executing", *command, "for changes in folder", *folder, "pattern", *pattern, "with a", *delay, "seconds delay")
 	Watcher(*folder, *pattern, *command, *delay)
 }

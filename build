@@ -6,8 +6,11 @@ go get gopkg.in/alecthomas/kingpin.v2
 go get github.com/fsnotify/fsnotify
 go install github.com/fsnotify/fsnotify
 echo building for macos
-GOOS=darwin GOARCH=amd64 go build -o dist/watcherino-mac watcherino.go
+mkdir dist/mac
+GOOS=darwin GOARCH=amd64 go build -o dist/mac/watcherino watcherino.go
 echo building for linux
-GOOS=linux GOARCH=amd64 go build -o dist/watcherino watcherino.go
+mkdir dist/linux
+GOOS=linux GOARCH=amd64 go build -o dist/linux/watcherino watcherino.go
 echo building for windows
-GOOS=windows GOARCH=amd64 go build -o dist/watcherino.exe watcherino.go
+mkdir dist/win
+GOOS=windows GOARCH=amd64 go build -o dist/win/watcherino.exe watcherino.go
