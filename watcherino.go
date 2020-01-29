@@ -80,7 +80,7 @@ func Watcher(folder string, pattern string, command string, delay int) {
 						if matched {
 							Delay(command, folder, filename, eventType, delay)
 						} else {
-							log.Println("not matched folder:", folder, "event:", event)
+							log.Println("pattern not matched for file:", filename, "in folder", folder, "event", event)
 						}
 					}
 				}
